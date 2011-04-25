@@ -1,0 +1,290 @@
+<html>
+  <head> 
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/> 
+    <title>geo everything</title> 
+    
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script src="http://maps.google.com/maps/api/js?sensor=false&key=ABQIAAAAChkz8FOrMzcX9xcS09YPihR6mKVFj_JSiDtjb6iXE-zX8sZaEBRpamkadXZGKo6lgKoy0ZNHY4uB0A"
+            type="text/javascript"></script> 
+    <script type="text/javascript" src="js/jquery.json-2.2.min.js"></script>
+    <script type="text/javascript" src="js/GeoJSON.js"></script>
+    <script type="text/javascript"> 
+    
+    
+    // http://www.movable-type.co.uk/scripts/latlong.html
+    /** Converts numeric degrees to radians */
+    if (typeof(Number.prototype.toRad) === "undefined") {
+      Number.prototype.toRad = function() {
+        return this * Math.PI / 180;
+      }
+    }
+    
+    // http://www.movable-type.co.uk/scripts/latlong.html
+    function distance_to(lat, lng, lat2, lng2) {
+      var R = 6371; // km
+      var dLat = (lat2-lat).toRad();
+      var dLon = (lng2-lng).toRad(); 
+      var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat.toRad()) * Math.cos(lat2.toRad()) * 
+              Math.sin(dLon/2) * Math.sin(dLon/2); 
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+      var d = R * c;
+      return d.toPrecision(3);
+    }
+    
+    
+    function placeMarker(location, title, map) {
+      var marker = new google.maps.Marker({
+          position: location, 
+          title: title,
+          map: map
+      });
+      markersArray.push(marker);
+    }
+    
+    
+    function clearOverlays() {
+      // v3 of the maps api doesnt have clearOverlays() built in
+      if (markersArray) {
+        for (i in markersArray) {
+          markersArray[i].setMap(null);
+        }
+      }
+    }
+    
+
+                  
+    function build_table(category, short_cat, lat, lng, map) {
+      var url = "http://s7.infinitemonkeys.info/geo/location/infochimps/the_works/places.json?apikey=" + apikey + "&_from=0&_limit=100&zoom=" + zoom_level + "&category=" + short_cat + "&lng=" + lng + "&lat=" + lat + "&callback=?";
+      
+      $.getJSON(url, 
+        function(data){ 
+          
+          var fc = data.features;
+          
+          if (fc.length > 0) {
+            $("#tables").append('<h2>' + category + '</h2>');
+            $("#tables").append('<h3>source: <a href="' + url + '">' + url + '</a></h3>');
+            $("#tables").append('<table class="category-table" id="table_' + short_cat + '"><tr class="table-header"><th>Place name</th><th>Lat/Long</th><th>Feature code</th><th>Geoname ID</th><th>Admin Code</th><th>Country Code</th><th>Distance (km)</th></tr></table>');
+            
+            
+            // iterate through the featurescollection
+            for (feature in fc) {
+              
+              
+              
+              // write to table
+              
+              if (fc.hasOwnProperty(feature)) { // http://stackoverflow.com/questions/684672/loop-through-json-object
+                if (fc[feature].geometry.type == "Point" && $('#points').attr('checked')) {  
+                  
+                  // write down points
+                  
+                  var lat2 = fc[feature].geometry.coordinates[1];
+                  var lng2 = fc[feature].geometry.coordinates[0];
+                  
+                  // calculate distance
+                  var d = distance_to(lat, lng, lat2, lng2);
+                  
+                  
+                  var marker = 
+                  placeMarker(new google.maps.LatLng(fc[feature].geometry.coordinates[1], fc[feature].geometry.coordinates[0]), fc[feature].properties.name, map);
+                  
+                  
+                  
+                  $("#table_" + short_cat + " .table-header").after("<tr><td>" + fc[feature].properties.asciiname + "</td>" +
+                    "<td>" + fc[feature].geometry.coordinates.reverse() + "</td>" + // be careful. this is like reverse! in ruby, so if you call anything after this it will still be reversed
+                    "<td>" + fc[feature].properties.feature_code + "</td>" +
+                    "<td>" + fc[feature].properties.geonameid + "</td>" +
+                    "<td>" + fc[feature].properties.admin1_code + "</td>" +
+                    "<td>" + fc[feature].properties.country_code   + "</td>" +
+                    "<td>" + d   + "</td>" +
+                    "</tr>");ap
+                  
+                  
+                } else if (fc[feature].geometry.type == "Polygon" &&  $('#paths').attr('checked')) {
+                  
+                  // trace paths
+                  var geojson = fc[feature].geometry;
+                  
+                  var googleOptions = {
+                    strokeColor: "#FFFF00",
+                    strokeWeight: 7,
+                    strokeOpacity: 0.75
+                  };
+                  
+                  googleVector = new GeoJSON(geojson, googleOptions);
+                  googleVector.setMap(map);
+                  markersArray.push(googleVector);
+                  
+                  
+                  // write to list
+                  $("#table_" + short_cat + " .table-header").after("<tr class='highlight'><td>" + fc[feature].properties.name + "</td>" +
+                    "<td>" + "Multi-point path" + "</td>" +
+                    "<td>" + "" + "</td>" +
+                    "<td>" + "" + "</td>" +
+                    "<td>" + fc[feature].properties.region + "</td>" +
+                    "<td>" + fc[feature].properties.country   + "</td>" +
+                    "<td>" + "" + "</td>" +
+                    "</tr>");
+                  
+                  
+                } else {
+                }
+              }
+            }
+            
+          }
+        });
+    }
+              
+    
+    var apikey = "ioda006-AvloZA624jIXIzWOBzHuSE6G-69";
+    var map;
+    var markersArray = [];
+    var zoom_level = 6;
+    
+		
+    function initialize() {
+      var latlng = new google.maps.LatLng(37.4419, -122.1419);
+      
+      var myOptions = {
+        zoom: 13,
+        center: latlng,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+      };
+      var map = new google.maps.Map(document.getElementById("map_canvas"),
+        myOptions);
+      
+      
+      
+      google.maps.event.addListener(map, "click", function(event) {
+          
+            var categories = ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land"]
+            
+            $("#tables").empty(); // clear all the table rows
+            clearOverlays(); // clear all map markers
+            
+            // console.log(event.latLng.lat()); you may want to know where you're clicking sometimes
+            
+            
+            for (category in categories){
+              build_table(categories[category], categories[category], event.latLng.lat(), event.latLng.lng(), map);
+            }
+            
+      });
+      
+      
+      
+    }
+    
+    
+    
+    $(document).ready(function() {
+        // listen for zoom change
+        $('#zoom_select').change(function() {
+            zoom_level = $('#zoom_select :selected').val();
+        });
+    });
+    
+    </script> 
+    
+  <link rel="stylesheet" href="css/screen.css" type="text/css" media="screen" charset="utf-8">
+  <link rel="stylesheet" href="css/print.css" type="text/css" media="print" charset="utf-8">
+  <!--[if lte IE 6]><link rel="stylesheet" href="css/lib/ie.css" type="text/css" media="screen" charset="utf-8"><![endif]-->
+  
+  <style type="text/css">
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  tr:nth-child(odd)		{ background-color:#eee; }
+  tr:nth-child(even)		{ background-color:#fff; }
+  tr th { 
+    background: #333c44; 
+    color: white;
+    padding: 4px 9px 4px 1px;
+  }
+  
+  h2 {
+    color: #4a674b;
+    margin-bottom: 2px;
+  }
+  
+  h3, h3 a {
+    color: gray;
+    font-size: 1em;
+    font-weight: normal;
+  }
+  
+  .highlight {
+    font-weight: bold;
+    color: green;
+  }
+
+  
+  #map_canvas {
+    
+    display: block;
+    position:absolute;
+    height:auto;
+    bottom:0;
+    top:0;
+    left:0;
+    width: 50%;
+    background-color: green;
+  }
+
+  #right_panel {
+    
+    display: block;
+    position:absolute;
+    height:auto;
+    bottom:0;
+    top:0;
+    right:0;
+    width: 50%;
+    overflow: scroll;
+  }
+  
+  .container {
+    margin: 0 10px;
+  }
+ 
+    
+  </style>
+  </head> 
+  <body onload="initialize()"> 
+  
+    <div id="map_canvas"></div> 
+    
+    <div id="right_panel">
+      <div class="container">
+        
+        <div id="options">
+          <b>Show:</b> 
+          <input type="checkbox" name="" value="" id="points" checked /> Points
+          <input type="checkbox" name="" value="" id="paths" checked /> Paths
+          <select name="zoom" id="zoom_select" style="margin-left: 20px;">
+            <option value="8">8 (0.61 km) (paths do not appear)</option>
+            <option value="7">7 (2.4 km)</option>
+            <option value="6" selected>6 (9.7 km) (default)</option>
+            <option value="5">5 (39 km) (CAUTION - loads a lot of stuff)</option>
+          </select>
+          Zoom level
+        </div>
+        <div id="tables"></div>
+        
+        <div id="info">
+        
+
+          <p>Click anywhere on the map to retrieve a list of all the places this API knows about in a pre-defined map tile.</p>
+          
+          <p>This app was built using the <a href="http://infochimps.com/">Infochimps API</a>.  It uses <a href="http://www.geonames.org/">GeoNames</a> data served up through the  <a href="#">GeoNames API call</a>.  Distance calculation made using <a href="http://www.movable-type.co.uk/scripts/latlong.html">movable-type.co.uk</a></p>
+        </div>
+      </div>
+    
+    </div>  
+  </body> 
+</html> 
