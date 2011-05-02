@@ -9,7 +9,21 @@
     <script type="text/javascript" src="js/jquery.json-2.2.min.js"></script>
     <script type="text/javascript" src="js/GeoJSON.js"></script>
     <script type="text/javascript"> 
+    // todo/notes
+    /* 
     
+    - make categories/sources a multidimensional array, otherwise fire/tele/eurowireless gets called improperly (passes categories to it when it doesnt take cateogries)
+   
+    
+    - the api calls are async. if you click again before the calls can finish, the first set of markers will not be cleared
+    
+    
+    - on natural earth, some things show up on level 2 that dont show up at level one.  try clicking on the US and you'll see some states appear at level 1 and ALL states appear at level 2.
+    
+    - feature: show all points, show all paths.  autoselects the apis that pull these
+    - feature: update address bar for location and zoom and other attributes
+    
+    */
     
     // http://www.movable-type.co.uk/scripts/latlong.html
     /** Converts numeric degrees to radians */
@@ -42,6 +56,27 @@
       markersArray.push(marker);
     }
     
+    function drawPath(geometry, map) {      
+      var googleOptions = {
+        strokeColor: "#FFFF00",
+        strokeWeight: 7,
+        strokeOpacity: 0.75,
+        fillOpacity: 0.1
+      };
+      
+      currentFeature_or_Features = new GeoJSON(geometry, googleOptions);
+      
+      if (currentFeature_or_Features.length){
+				for (var i = 0; i < currentFeature_or_Features.length; i++){
+					currentFeature_or_Features[i].setMap(map);
+					markersArray.push(currentFeature_or_Features[i]);
+				}
+			} else {
+				currentFeature_or_Features.setMap(map)
+				markersArray.push(currentFeature_or_Features);
+			}
+    }
+    
     
     function clearOverlays() {
       // v3 of the maps api doesnt have clearOverlays() built in
@@ -54,15 +89,17 @@
     
 
                   
-    function build_table(category, short_cat, lat, lng, map) {
-      var url = "http://s7.infinitemonkeys.info/geo/location/infochimps/the_works/places.json?apikey=" + apikey + "&_from=0&_limit=100&zoom=" + zoom_level + "&category=" + short_cat + "&lng=" + lng + "&lat=" + lat + "&callback=?";
+    function build_table(category, short_cat, lat, lng, map, source) {
+      var url = "http://api.infochimps.com/geo/location/infochimps/" + source + "/places.json?apikey=" + apikey + "&_from=0&_limit=2&zoom=" + zoom_level + "&category=" + short_cat + "&lng=" + lng + "&lat=" + lat + "&callback=?";
+      
+      console.log(url);
       
       $.getJSON(url, 
         function(data){ 
           
           var fc = data.features;
           
-          if (fc.length > 0) {
+          if (fc && fc.length > 0) {
             $("#tables").append('<h2>' + category + '</h2>');
             $("#tables").append('<h3>source: <a href="' + url + '">' + url + '</a></h3>');
             $("#tables").append('<table class="category-table" id="table_' + short_cat + '"><tr class="table-header"><th>Place name</th><th>Lat/Long</th><th>Feature code</th><th>Geoname ID</th><th>Admin Code</th><th>Country Code</th><th>Distance (km)</th></tr></table>');
@@ -102,21 +139,12 @@
                     "</tr>");
                   
                   
-                } else if (fc[feature].geometry.type == "Polygon" &&  $('#paths').attr('checked')) {
+                } else if ((fc[feature].geometry.type == "Polygon" || fc[feature].geometry.type == "MultiPolygon") && $('#shapes').attr('checked')) {
+                  
                   
                   // trace paths
-                  var geojson = fc[feature].geometry;
-                  
-                  var googleOptions = {
-                    strokeColor: "#FFFF00",
-                    strokeWeight: 7,
-                    strokeOpacity: 0.75
-                  };
-                  
-                  googleVector = new GeoJSON(geojson, googleOptions);
-                  googleVector.setMap(map);
-                  markersArray.push(googleVector);
-                  
+                  drawPath(fc[feature].geometry, map);
+
                   
                   // write to list
                   $("#table_" + short_cat + " .table-header").after("<tr class='highlight'><td>" + fc[feature].properties.name + "</td>" +
@@ -139,11 +167,12 @@
     }
               
     
-    var apikey = "ioda006-iKJYsf_kh1QI0ZTPA6IaN-vCH69";
+    var apikey = "flip69";
     var map;
     var markersArray = [];
     var zoom_level = 6;
-    
+    var sources = ["geonames", "auto_nav_data", "natural_earth", "fire", "tele", "freebase_geo", "euro_wireless"];
+    var categories = ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"];
 		
     function initialize() {
       var latlng = new google.maps.LatLng(37.4419, -122.1419);
@@ -160,23 +189,37 @@
       
       google.maps.event.addListener(map, "click", function(event) {
           
-            var categories = ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land"]
-            
-            $("#tables").empty(); // clear all the table rows
-            clearOverlays(); // clear all map markers
-            
-            // console.log(event.latLng.lat()); you may want to know where you're clicking sometimes
-            
-            
-            for (category in categories){
-              build_table(categories[category], categories[category], event.latLng.lat(), event.latLng.lng(), map);
+          
+          $("#tables").empty(); // clear all the table rows
+          clearOverlays(); // clear all map markers and shapes
+          
+          // console.log(event.latLng.lat()); you may want to know where you're clicking sometimes
+          
+          for (category in categories) {
+            for (source in sources) {
+              build_table(categories[category], categories[category], event.latLng.lat(), event.latLng.lng(), map, sources[source]);
             }
-            
+          }
+          
       });
       
       
+      google.maps.event.addListener(map, 'zoom_changed', function() {
+          google_zoom = map.getZoom();
+          console.log(google_zoom);
+          
+          // if(google_zoom > 10) {
+          //   zoom_level = 4;
+          // } else if (google_zoom <= 10) {
+          //   zoom_level = 6;
+          // }
+          
+          console.log("zoom level" + zoom_level);
+      });
       
     }
+    
+    
     
     
     
@@ -184,6 +227,15 @@
         // listen for zoom change
         $('#zoom_select').change(function() {
             zoom_level = $('#zoom_select :selected').val();
+            console.log("zoom level" + zoom_level);
+        });
+        
+        $('input[name="source_checkboxen"]').change(function() {
+            sources = [];
+            $("input[name='source_checkboxen']:checked").each(function() {
+                sources.push($(this).val());
+            });
+            console.log(sources);
         });
     });
     
@@ -263,14 +315,29 @@
       <div class="container">
         
         <div id="options">
+          <b>Sources:</b>
+          <div id="source_list">
+            <input type="checkbox" name="source_checkboxen" value="auto_nav_data"  checked /> auto nav
+            <input type="checkbox" name="source_checkboxen" value="geonames"  checked /> geonames
+            <input type="checkbox" name="source_checkboxen" value="natural_earth"  checked /> natural earth
+            <input type="checkbox" name="source_checkboxen" value="fire"   /> fire
+            <input type="checkbox" name="source_checkboxen" value="tele"   /> tele
+            <input type="checkbox" name="source_checkboxen" value="euro_wireless"   /> euro wireless
+          </div>
+          
           <b>Show:</b> 
           <input type="checkbox" name="" value="" id="points" checked /> Points
-          <input type="checkbox" name="" value="" id="paths" checked /> Paths
+          <input type="checkbox" name="" value="" id="shapes" checked /> Shapes (geographic areas)
+          <input type="checkbox" name="" value="" id="paths" checked /> Paths (roads, railroads)
           <select name="zoom" id="zoom_select" style="margin-left: 20px;">
             <option value="8">8 (0.61 km) (paths do not appear)</option>
             <option value="7">7 (2.4 km)</option>
             <option value="6" selected>6 (9.7 km) (default)</option>
             <option value="5">5 (39 km) (CAUTION - loads a lot of stuff)</option>
+            <option value="4">4 (155 km)</option>
+            <option value="3">3 (628 km)</option>
+            <option value="2">2 (2530 km)</option>
+            <option value="1">1 (10,018 km)</option>
           </select>
           Zoom level
         </div>
