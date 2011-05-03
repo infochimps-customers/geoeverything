@@ -175,6 +175,21 @@
     var zoom_level = 6;
     var sources = ["geonames", "auto_nav_data", "natural_earth", "fire", "tele", "freebase_geo", "euro_wireless"];
     var categories = ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"];
+    
+    var cats_sources = {
+      geonames : ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"],
+      
+      natural_earth : ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"],
+      
+      fire : ["blah"],
+      
+      auto_nav_data : ["road", "railroad"],
+      
+      tele : ["blah"],
+      
+      euro_wireless : ["blah"]
+    };
+
 		
     function initialize() {
       var latlng = new google.maps.LatLng(37.4419, -122.1419);
@@ -197,11 +212,20 @@
           
           // console.log(event.latLng.lat()); you may want to know where you're clicking sometimes
           
-          for (category in categories) {
-            for (source in sources) {
-              build_table(categories[category], categories[category], event.latLng.lat(), event.latLng.lng(), map, sources[source]);
+          for (source in sources) {
+              for (cat in cats_sources[sources[source]]) {
+                console.log(cats_sources[sources[source]][cat]);
+                
+                build_table(cats_sources[sources[source]][cat], cats_sources[sources[source]][cat], event.latLng.lat(), event.latLng.lng(), map, sources[source]);
+                
+              }
             }
-          }
+          
+          //for (category in categories) {
+          //  for (source in sources) {
+          //    build_table(categories[category], categories[category], event.latLng.lat(), event.latLng.lng(), map, sources[source]);
+          //  }
+          //}
           
       });
       
