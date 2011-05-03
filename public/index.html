@@ -20,6 +20,8 @@
     
     - on natural earth, some things show up on level 2 that dont show up at level one.  try clicking on the US and you'll see some states appear at level 1 and ALL states appear at level 2.
     
+    - a lot of important cities dont show up at level 1 as points, but do on level 2.
+    
     - feature: show all points, show all paths.  autoselects the apis that pull these
     - feature: update address bar for location and zoom and other attributes
     
@@ -317,9 +319,9 @@
         <div id="options">
           <b>Sources:</b>
           <div id="source_list">
-            <input type="checkbox" name="source_checkboxen" value="auto_nav_data"  checked /> auto nav
+            <input type="checkbox" name="source_checkboxen" value="auto_nav_data"   /> auto nav
             <input type="checkbox" name="source_checkboxen" value="geonames"  checked /> geonames
-            <input type="checkbox" name="source_checkboxen" value="natural_earth"  checked /> natural earth
+            <input type="checkbox" name="source_checkboxen" value="natural_earth" /> natural earth
             <input type="checkbox" name="source_checkboxen" value="fire"   /> fire
             <input type="checkbox" name="source_checkboxen" value="tele"   /> tele
             <input type="checkbox" name="source_checkboxen" value="euro_wireless"   /> euro wireless
@@ -328,7 +330,7 @@
           <b>Show:</b> 
           <input type="checkbox" name="" value="" id="points" checked /> Points
           <input type="checkbox" name="" value="" id="shapes" checked /> Shapes (geographic areas)
-          <input type="checkbox" name="" value="" id="paths" checked /> Paths (roads, railroads)
+          <!-- <input type="checkbox" name="" value="" id="paths" /> Paths (roads, railroads) -->
           <select name="zoom" id="zoom_select" style="margin-left: 20px;">
             <option value="8">8 (0.61 km) (paths do not appear)</option>
             <option value="7">7 (2.4 km)</option>
