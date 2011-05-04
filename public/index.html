@@ -95,7 +95,7 @@
     function build_table(category, short_cat, lat, lng, map, source) {
       var url = "http://api.infochimps.com/geo/location/infochimps/" + source + "/places.json?apikey=" + apikey + "&_from=0&_limit=2&zoom=" + zoomLevel + "&category=" + short_cat + "&lng=" + lng + "&lat=" + lat + "&callback=?";
       
-      console.log(url);
+      // console.log(url);
       
       $.getJSON(url, 
         function(data){ 
@@ -132,14 +132,16 @@
                   
                   
                   
-                  $("#table_" + short_cat + " .table-header").after("<tr><td>" + fc[feature].properties.asciiname + "</td>" +
+                  $("#table_" + short_cat + " .table-header").after("<tr class='expand'>" +
+                    "<td><a href='#'>" + fc[feature].properties.asciiname + "</a><div class='properties'>" + JSON.stringify(fc[feature].properties, null, 2) + "</div></td>" +
                     "<td>" + fc[feature].geometry.coordinates.reverse() + "</td>" + // be careful. this is like reverse! in ruby, so if you call anything after this it will still be reversed
                     "<td>" + fc[feature].properties.feature_code + "</td>" +
                     "<td>" + fc[feature].properties.geonameid + "</td>" +
                     "<td>" + fc[feature].properties.admin1_code + "</td>" +
                     "<td>" + fc[feature].properties.country_code   + "</td>" +
                     "<td>" + d   + "</td>" +
-                    "</tr>");
+                    "</tr>"
+                    );
                   
                   
                 } else if ((fc[feature].geometry.type == "Polygon" || fc[feature].geometry.type == "MultiPolygon") && $('#shapes').attr('checked')) {
@@ -173,7 +175,7 @@
     var apikey = "ioda006-AvloZA624jIXIzWOBzHuSE6G-69";
     var map;
     var markersArray = [];
-    var zoomLevel = $(document).getUrlParam("zoomLevel") != null ? $(document).getUrlParam("zoomLevel") : 6 ;
+    var zoomLevel = $(document).getUrlParam("zoomLevel") != null ? parseInt($(document).getUrlParam("zoomLevel")) : 6 ;
     var sources = ["geonames", "auto_nav_data", "natural_earth", "fire", "tele", "freebase_geo", "euro_wireless"];
     
     var cats_sources = {
@@ -198,8 +200,6 @@
     
     
     $(document).ready(function() {
-      
-      console.log(googleZoom);
         
         $.getJSON("http://api.infochimps.com/web/an/ip_census/combined.json?&apikey=flip69&ip=67.78.118.7&callback=?",
           function(data){ 
@@ -225,7 +225,7 @@
             
             for (source in sources) {
               for (cat in cats_sources[sources[source]]) {
-                console.log(cats_sources[sources[source]][cat]);
+                // console.log(cats_sources[sources[source]][cat]);
                 
                 build_table(cats_sources[sources[source]][cat], cats_sources[sources[source]][cat], event.latLng.lat(), event.latLng.lng(), map, sources[source]);
                 
@@ -276,7 +276,6 @@
         // listen for zoom change
         $('#zoom_select').change(function() {
             zoomLevel = $('#zoom_select :selected').val();
-            console.log("zoom level" + zoomLevel);
         });
         
         // listen for sources change
@@ -285,7 +284,11 @@
             $("input[name='source_checkboxen']:checked").each(function() {
                 sources.push($(this).val());
             });
-            console.log(sources);
+        });
+        
+        // expand properties list when someone clicks on its row
+        $(".expand").live('click', function() {
+            $('.properties', this).toggle();
         });
     });
     
@@ -375,6 +378,13 @@
   
   #info {
     padding: 30px;
+    background: #eee;
+    margin-top: 20px;
+  }
+  
+  .properties {
+    white-space: pre;
+    display: none;
   }
     
   </style>
