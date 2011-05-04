@@ -152,7 +152,8 @@
 
                   
                   // write to list
-                  $("#table_" + short_cat + " .table-header").after("<tr class='highlight'><td>" + fc[feature].properties.name + "</td>" +
+                  $("#table_" + short_cat + " .table-header").after("<tr class='highlight expand'>" +
+                    "<td><a href='#'>" + fc[feature].properties.name + "</a><div class='properties'>" + JSON.stringify(fc[feature].properties, null, 2) + "</div></td>" +
                     "<td>" + "Multi-point path" + "</td>" +
                     "<td>" + "" + "</td>" +
                     "<td>" + "" + "</td>" +
