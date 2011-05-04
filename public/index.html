@@ -8,6 +8,7 @@
             type="text/javascript"></script> 
     <script type="text/javascript" src="js/jquery.json-2.2.min.js"></script>
     <script type="text/javascript" src="js/GeoJSON.js"></script>
+    <script type="text/javascript" src="js/jquery.getUrlParam.js"></script>
     <script type="text/javascript"> 
     // todo/notes
     /* 
@@ -169,10 +170,10 @@
     }
               
     
-    var apikey = "flip69";
+    var apikey = "ioda006-AvloZA624jIXIzWOBzHuSE6G-69";
     var map;
     var markersArray = [];
-    var zoomLevel = 6;
+    var zoomLevel = $(document).getUrlParam("zoomLevel") != null ? $(document).getUrlParam("zoomLevel") : 6 ;
     var sources = ["geonames", "auto_nav_data", "natural_earth", "fire", "tele", "freebase_geo", "euro_wireless"];
     
     var cats_sources = {
@@ -190,13 +191,15 @@
     };
     
     var startLocation = new google.maps.LatLng(37.4419, -122.1419);  // default to palo alto if ip_census doesn't find anything
-    
+    var googleZoom = $(document).getUrlParam("googleZoom") != null ? parseInt($(document).getUrlParam("googleZoom")) : 13 ;
     
     
     
     
     
     $(document).ready(function() {
+      
+      console.log(googleZoom);
         
         $.getJSON("http://api.infochimps.com/web/an/ip_census/combined.json?&apikey=flip69&ip=67.78.118.7&callback=?",
           function(data){ 
@@ -206,7 +209,7 @@
           });
         
         var mapOptions = {
-          zoom: 13,
+          zoom: googleZoom,
           center: startLocation,
           mapTypeId: google.maps.MapTypeId.ROADMAP
         };
@@ -369,6 +372,10 @@
     background: #fce6a9;
     padding: 10px;
   }
+  
+  #info {
+    padding: 30px;
+  }
     
   </style>
   </head> 
@@ -419,6 +426,10 @@
         
 
           <p>Click anywhere on the map to retrieve a list of all the places this API knows about in a pre-defined map tile.</p>
+          
+          Try:
+          <ul>
+            <li>Find a big city, turn on <code>points</code>
           
           <p>This app was built using the <a href="http://infochimps.com/">Infochimps API</a>.  It uses <a href="http://www.geonames.org/">GeoNames</a> data served up through the  <a href="#">GeoNames API call</a>.  Distance calculation made using <a href="http://www.movable-type.co.uk/scripts/latlong.html">movable-type.co.uk</a></p>
         </div>
