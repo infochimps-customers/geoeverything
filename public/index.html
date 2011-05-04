@@ -92,7 +92,7 @@
 
                   
     function build_table(category, short_cat, lat, lng, map, source) {
-      var url = "http://api.infochimps.com/geo/location/infochimps/" + source + "/places.json?apikey=" + apikey + "&_from=0&_limit=2&zoom=" + zoom_level + "&category=" + short_cat + "&lng=" + lng + "&lat=" + lat + "&callback=?";
+      var url = "http://api.infochimps.com/geo/location/infochimps/" + source + "/places.json?apikey=" + apikey + "&_from=0&_limit=2&zoom=" + zoomLevel + "&category=" + short_cat + "&lng=" + lng + "&lat=" + lat + "&callback=?";
       
       console.log(url);
       
@@ -125,7 +125,7 @@
                   // calculate distance
                   var d = distance_to(lat, lng, lat2, lng2);
                   
-                  
+                  // doesn't always pass a tooltip marker name because 'name' isnt always part of the properties.
                   var marker = 
                   placeMarker(new google.maps.LatLng(fc[feature].geometry.coordinates[1], fc[feature].geometry.coordinates[0]), fc[feature].properties.name, map);
                   
@@ -172,47 +172,55 @@
     var apikey = "flip69";
     var map;
     var markersArray = [];
-    var zoom_level = 6;
+    var zoomLevel = 6;
     var sources = ["geonames", "auto_nav_data", "natural_earth", "fire", "tele", "freebase_geo", "euro_wireless"];
-    var categories = ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"];
     
     var cats_sources = {
       geonames : ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"],
       
       natural_earth : ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"],
       
-      fire : ["blah"],
+      fire : ["fire"],
       
       auto_nav_data : ["road", "railroad"],
       
-      tele : ["blah"],
+      tele : ["tele"],
       
-      euro_wireless : ["blah"]
+      euro_wireless : ["euro_wireless"]
     };
-
-		
-    function initialize() {
-      var latlng = new google.maps.LatLng(37.4419, -122.1419);
-      
-      var myOptions = {
-        zoom: 13,
-        center: latlng,
-        mapTypeId: google.maps.MapTypeId.ROADMAP
-      };
-      var map = new google.maps.Map(document.getElementById("map_canvas"),
-        myOptions);
-      
-      
-      
-      google.maps.event.addListener(map, "click", function(event) {
-          
-          
-          $("#tables").empty(); // clear all the table rows
-          clearOverlays(); // clear all map markers and shapes
-          
-          // console.log(event.latLng.lat()); you may want to know where you're clicking sometimes
-          
-          for (source in sources) {
+    
+    var startLocation = new google.maps.LatLng(37.4419, -122.1419);  // default to palo alto if ip_census doesn't find anything
+    
+    
+    
+    
+    
+    
+    $(document).ready(function() {
+        
+        $.getJSON("http://api.infochimps.com/web/an/ip_census/combined.json?&apikey=flip69&ip=67.78.118.7&callback=?",
+          function(data){ 
+            startLocation = new google.maps.LatLng(data.latitude, data.longitude);
+            
+            // need to put EVERYTHING inside here.
+          });
+        
+        var mapOptions = {
+          zoom: 13,
+          center: startLocation,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        
+        var map = new google.maps.Map(document.getElementById("map_canvas"),
+          mapOptions);
+        
+        google.maps.event.addListener(map, "click", function(event) {
+            $("#tables").empty(); // clear all the table rows
+            clearOverlays(); // clear all map markers and shapes
+            
+            // console.log(event.latLng.lat()); you may want to know where you're clicking sometimes
+            
+            for (source in sources) {
               for (cat in cats_sources[sources[source]]) {
                 console.log(cats_sources[sources[source]][cat]);
                 
@@ -220,42 +228,55 @@
                 
               }
             }
-          
-          //for (category in categories) {
-          //  for (source in sources) {
-          //    build_table(categories[category], categories[category], event.latLng.lat(), event.latLng.lng(), map, sources[source]);
-          //  }
-          //}
-          
-      });
-      
-      
-      google.maps.event.addListener(map, 'zoom_changed', function() {
-          google_zoom = map.getZoom();
-          console.log(google_zoom);
-          
-          // if(google_zoom > 10) {
-          //   zoom_level = 4;
-          // } else if (google_zoom <= 10) {
-          //   zoom_level = 6;
-          // }
-          
-          console.log("zoom level" + zoom_level);
-      });
-      
-    }
-    
-    
-    
-    
-    
-    $(document).ready(function() {
-        // listen for zoom change
-        $('#zoom_select').change(function() {
-            zoom_level = $('#zoom_select :selected').val();
-            console.log("zoom level" + zoom_level);
+            
+            
         });
         
+        // auto zoom
+        // google.maps.event.addListener(map, 'zoom_changed', function() {
+        //     google_zoom = map.getZoom();
+        //     console.log(google_zoom);
+        //     
+        //     // if(google_zoom > 10) {
+        //     //   zoomLevel = 4;
+        //     // } else if (google_zoom <= 10) {
+        //     //   zoomLevel = 6;
+        //     // }
+        //     
+        //     console.log("zoom level" + zoomLevel);
+        // });
+        
+        // set location by ip_census call: http://api.infochimps.com/describe/web/an/ip_census/combined
+        
+        
+        // set new location on address submit
+        $("#address_form").submit(function() {
+            // don't let the form submit
+            event.preventDefault();
+            
+            var address = $("#address").val();
+            geocoder = new google.maps.Geocoder();
+            geocoder.geocode( { 'address': address}, function(results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                  map.setCenter(results[0].geometry.location);
+                  var marker = new google.maps.Marker({
+                      map: map,
+                      position: results[0].geometry.location
+                  });
+                } else {
+                  $("#error").slideDown(200).html("Sorry, couldn't find that").delay(1000).slideUp(300);
+                }
+            });
+            
+        });
+        
+        // listen for zoom change
+        $('#zoom_select').change(function() {
+            zoomLevel = $('#zoom_select :selected').val();
+            console.log("zoom level" + zoomLevel);
+        });
+        
+        // listen for sources change
         $('input[name="source_checkboxen"]').change(function() {
             sources = [];
             $("input[name='source_checkboxen']:checked").each(function() {
@@ -296,6 +317,20 @@
     font-weight: normal;
   }
   
+  .info, .success, .warning, .error, .validation {
+    border: 1px solid;
+    margin: 10px 0px;
+    padding:15px 10px;
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    display: none;
+  }
+
+  .error {
+    color: #D8000C;
+    background-color: #FFBABA;
+  }
+  
   .highlight {
     font-weight: bold;
     color: green;
@@ -329,11 +364,15 @@
   .container {
     margin: 0 10px;
   }
- 
+  
+  #options {
+    background: #fce6a9;
+    padding: 10px;
+  }
     
   </style>
   </head> 
-  <body onload="initialize()"> 
+  <body> 
   
     <div id="map_canvas"></div> 
     
@@ -341,9 +380,16 @@
       <div class="container">
         
         <div id="options">
-          <b>Sources:</b>
+        <form id="address_form">
+          <input type="text" name="addy" value="" id="address" style="width: 80%" placeholder="example: Austin, TX" />
+          <input type="submit" name="" value="Search" style="width: 15%" />
+        </form>
+        <div id="error" class="error">
+        </div>
+          
           <div id="source_list">
-            <input type="checkbox" name="source_checkboxen" value="auto_nav_data"   /> auto nav
+            <b>Sources:</b>
+            <!-- <input type="checkbox" name="source_checkboxen" value="auto_nav_data"   /> auto nav  -->
             <input type="checkbox" name="source_checkboxen" value="geonames"  checked /> geonames
             <input type="checkbox" name="source_checkboxen" value="natural_earth" /> natural earth
             <input type="checkbox" name="source_checkboxen" value="fire"   /> fire
@@ -353,9 +399,9 @@
           
           <b>Show:</b> 
           <input type="checkbox" name="" value="" id="points" checked /> Points
-          <input type="checkbox" name="" value="" id="shapes" checked /> Shapes (geographic areas)
+          <input type="checkbox" name="" value="" id="shapes"  /> Shapes (geographic areas)
           <!-- <input type="checkbox" name="" value="" id="paths" /> Paths (roads, railroads) -->
-          <select name="zoom" id="zoom_select" style="margin-left: 20px;">
+          <select name="zoom" id="zoom_select" style="margin-left: 30px;">
             <option value="8">8 (0.61 km) (paths do not appear)</option>
             <option value="7">7 (2.4 km)</option>
             <option value="6" selected>6 (9.7 km) (default)</option>
