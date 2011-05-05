@@ -50,12 +50,23 @@
     }
     
     
-    function placeMarker(location, title, map) {
+    function placeMarker(location, title, map, geojson) {
       var marker = new google.maps.Marker({
           position: location, 
           title: title,
           map: map
       });
+      
+      // add an infowindow
+      google.maps.event.addListener(marker, 'click', function () {
+          if (infowindow) infowindow.close();
+          infowindow = new google.maps.InfoWindow({
+              content: title + "<br /><div style='white-space: pre'>" + JSON.stringify(geojson, null, 2) + "</div>"
+          });
+          infowindow.open(map, this);
+      });
+      
+      // add it to the array so we can keep track of it and clear it with clearOverlays
       markersArray.push(marker);
     }
     
@@ -128,7 +139,7 @@
                   
                   // doesn't always pass a tooltip marker name because 'name' isnt always part of the properties.
                   var marker = 
-                  placeMarker(new google.maps.LatLng(fc[feature].geometry.coordinates[1], fc[feature].geometry.coordinates[0]), fc[feature].properties.name, map);
+                  placeMarker(new google.maps.LatLng(fc[feature].geometry.coordinates[1], fc[feature].geometry.coordinates[0]), fc[feature].properties.name, map, fc[feature].properties);
                   
                   
                   
@@ -172,7 +183,7 @@
         });
     }
               
-    
+    var infowindow; // initialize infowindow or placeMarker will complain
     var apikey = "ioda006-AvloZA624jIXIzWOBzHuSE6G-69";
     var map;
     var markersArray = [];
