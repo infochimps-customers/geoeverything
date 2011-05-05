@@ -335,6 +335,16 @@
     font-weight: normal;
   }
   
+  label {
+    font-weight: normal;
+  }
+  
+  code {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #ba7f00;
+  }
+  
   .info, .success, .warning, .error, .validation {
     border: 1px solid;
     margin: 10px 0px;
@@ -419,16 +429,16 @@
           <div id="source_list">
             <b>Sources:</b>
             <!-- <input type="checkbox" name="source_checkboxen" value="auto_nav_data"   /> auto nav  -->
-            <input type="checkbox" name="source_checkboxen" value="geonames"  checked /> geonames
-            <input type="checkbox" name="source_checkboxen" value="natural_earth" /> natural earth
-            <input type="checkbox" name="source_checkboxen" value="fire"   /> fire
-            <input type="checkbox" name="source_checkboxen" value="tele"   /> tele
-            <input type="checkbox" name="source_checkboxen" value="euro_wireless"   /> euro wireless
+            <input type="checkbox" name="source_checkboxen" id="geonames"  value="geonames"  checked /> <label for="geonames">geonames</label>
+            <input type="checkbox" name="source_checkboxen" id="natural_earth"  value="natural_earth" /> <label for="natural_earth">natural earth</label>
+            <input type="checkbox" name="source_checkboxen" id="fire"  value="fire"   /> <label for="fire">fire</label>
+            <input type="checkbox" name="source_checkboxen" id="tele" value="tele"   /> <label for="tele">tele</label>
+            <input type="checkbox" name="source_checkboxen" id="euro_wireless"  value="euro_wireless"   /> <label for="euro_wireless">euro wireless</label>
           </div>
           
           <b>Show:</b> 
-          <input type="checkbox" name="" value="" id="points" checked /> Points
-          <input type="checkbox" name="" value="" id="shapes"  /> Shapes (geographic areas)
+          <input type="checkbox" name="" value="" id="points" checked /> <label for="points">Points</label>
+          <input type="checkbox" name="" value="" id="shapes"  /> <label for="shapes">Shapes (geographic areas)</label>
           <!-- <input type="checkbox" name="" value="" id="paths" /> Paths (roads, railroads) -->
           <select name="zoom" id="zoom_select" style="margin-left: 30px;">
             <option value="8">8 (0.61 km) (paths do not appear)</option>
@@ -449,11 +459,31 @@
 
           <p>Click anywhere on the map to retrieve a list of all the places this API knows about in a pre-defined map tile.</p>
           
-          Try:
+          <h2>Try:</h2>
           <ul>
-            <li>Find a big city, turn on <code>points</code>
+            <li>Find a big city, show <code>points</code></li>
+            <li>Zoom out to see an entire contient, turn zoom to 1 or 2, turn on <code>natural earth</code> and show both <code>points and shapes</code>.
+          </ul>
           
-          <p>This app was built using the <a href="http://infochimps.com/">Infochimps API</a>.  It uses <a href="http://www.geonames.org/">GeoNames</a> data served up through the  <a href="#">GeoNames API call</a>.  Distance calculation made using <a href="http://www.movable-type.co.uk/scripts/latlong.html">movable-type.co.uk</a></p>
+          <p>You can find all of the data used to make this demo on infochimps.com:</p>
+          <ul>
+            <li><a href="#">geonames api</a></li>
+            <li><a href="#">natural earth api</a></li>
+            <li><a href="#">fire stations api</a></li>
+            <li><a href="#">telecommunicaitons api</a></li>
+            <li><a href="#">euro wireless api</a></li>
+          </ul>
+          
+          <h2>Credits</h2>
+          <p>This app was built using the <a href="http://infochimps.com/">Infochimps API</a>.  It uses <a href="http://www.geonames.org/">GeoNames</a> data served up through the  <a href="#">GeoNames API call</a>.  </p>
+          
+          <ul>
+          <li>Distance calculation made using <a href="http://www.movable-type.co.uk/scripts/latlong.html">movable-type.co.uk</a>.</li>
+          <li>GeoJSON objects mapped to Google Maps using <a href="https://github.com/JasonSanford/GeoJSON-to-Google-Maps">GeoJSON-to-Google-Maps</a> by Jason Sanford</li>
+          <li>Also uses jQuery, jQuery JSON</li>
+          
+          
+          
         </div>
       </div>
     
