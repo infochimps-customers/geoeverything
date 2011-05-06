@@ -103,7 +103,7 @@
     
 
                   
-    function lookupBuildPlot(category, short_cat, lat, lng, map, source) {
+    function lookupBuildPlot(category, short_cat, lat, lng, map, source, color) {
       var url = "http://api.infochimps.com/geo/location/infochimps/" + source + "/places.json?apikey=" + apikey + "&_from=0&_limit=2&zoom=" + zoomLevel + "&category=" + short_cat + "&lng=" + lng + "&lat=" + lat + "&callback=?";
       
       // console.log(url);
@@ -139,7 +139,7 @@
                   
                   // doesn't always pass a tooltip marker name because 'name' isnt always part of the properties.
                   var marker = 
-                  placeMarker(new google.maps.LatLng(fc[feature].geometry.coordinates[1], fc[feature].geometry.coordinates[0]), fc[feature].properties.name, map, fc[feature].properties, "#ff0000");
+                  placeMarker(new google.maps.LatLng(fc[feature].geometry.coordinates[1], fc[feature].geometry.coordinates[0]), fc[feature].properties.name, map, fc[feature].properties, color);
                   
                   
                   
@@ -191,19 +191,19 @@
     var sources = ["geonames", "auto_nav_data", "natural_earth", "fire", "tele", "euro_wireless"];
     
     var cats_sources = {
-      geonames : ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"],
+      geonames: {categories: ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"], color: "ff0000"},
       
-      natural_earth : ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"],
+      natural_earth: {categories: ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"], color: "00ff00"},
       
-      auto_nav_data : ["road", "railroad"],
+      auto_nav_data: {categories: ["road", "railroad"], color: "00ffff"},
       
       // these sources below dont actually take the category param, but this makes it easy for us to loop through them and construct the table
       
-      fire : ["fire"],
+      fire: {categories: ["fire"], color: "0000ff"},
       
-      tele : ["tele"],
+      tele: {categories: ["tele"], color: "ff00ff"},
       
-      euro_wireless : ["euro_wireless"]
+      euro_wireless: {categories: ["euro_wireless"], color: "ffff00"}
     };
     
     var startLocation = new google.maps.LatLng(37.4419, -122.1419);  // default to palo alto if ip_census doesn't find anything
@@ -238,8 +238,8 @@
             // console.log(event.latLng.lat()); you may want to know where you're clicking sometimes
             
             $.each(sources, function(index, source) {
-                $.each(cats_sources[source], function(key, cat) {
-                    lookupBuildPlot(cat, cat, event.latLng.lat(), event.latLng.lng(), map, source);
+                $.each(cats_sources[source].categories, function(key, cat) {
+                    lookupBuildPlot(cat, cat, event.latLng.lat(), event.latLng.lng(), map, source, cats_sources[source].color);
                 });
             });
             
