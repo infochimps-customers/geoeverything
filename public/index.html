@@ -33,12 +33,11 @@
     
                   
     var infowindow; // initialize infowindow or placeMarker will complain
-    var apikey = "ioda006-AvloZA624jIXIzWOBzHuSE6G-69";
+    var apikey = "ioda006-AvloZA624jIXIzWOBzHuSE6G-69"; // infochimps.com api key 
     var map;
     var markersArray = [];
     var zoomLevel = $(document).getUrlParam("zoomLevel") != null ? parseInt($(document).getUrlParam("zoomLevel")) : 6 ; // http://www.mathias-bank.de/2007/04/21/jquery-plugin-geturlparam-version-2/
-    var sources = ["geonames", "auto_nav_data", "natural_earth", "fire", "tele", "euro_wireless"];
-    
+    var sources = ["geonames"];  // initial sources to query on
     var cats_sources = {
       geonames: {
         categories: ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"], 
@@ -98,7 +97,6 @@
       return d.toPrecision(3);
     }
     
-    
     function placeMarker(location, title, map, geojson, color) {
       var marker = new StyledMarker({
           styleIcon:new StyledIcon(StyledIconTypes.MARKER,{color: color}),
@@ -141,7 +139,6 @@
 			}
     }
     
-    
     function clearOverlays() {
       // v3 of the maps api doesnt have clearOverlays() built in
       if (markersArray) {
@@ -150,8 +147,6 @@
         }
       }
     }
-    
-
                   
     function lookupBuildPlot(category, short_cat, lat, lng, map, source, color) {
       var url = "http://api.infochimps.com/geo/location/infochimps/" + source + "/places.json?apikey=" + apikey + "&_from=0&_limit=2&zoom=" + zoomLevel + "&category=" + short_cat + "&lng=" + lng + "&lat=" + lat + "&callback=?";
@@ -164,22 +159,15 @@
           var fc = data.features;
           
           if (fc && fc.length > 0) {
+            // build  table headers
             $("#tables").append('<h2>' + category + '</h2>');
             $("#tables").append('<h3>source: <a href="' + url + '">' + url + '</a></h3>');
             $("#tables").append('<table class="category-table" id="table_' + short_cat + '"><tr class="table-header"><th>Place name</th><th>Lat/Long</th><th>Feature code</th><th>Geoname ID</th><th>Admin Code</th><th>Country Code</th><th>Distance (km)</th></tr></table>');
             
-            
             // iterate through the featurescollection
             for (feature in fc) {
-              
-              
-              
-              // write to table
-              
               if (fc.hasOwnProperty(feature)) { // http://stackoverflow.com/questions/684672/loop-through-json-object
                 if (fc[feature].geometry.type == "Point" && $('#points').attr('checked')) {  
-                  
-                  // write down points
                   
                   var lat2 = fc[feature].geometry.coordinates[1];
                   var lng2 = fc[feature].geometry.coordinates[0];
@@ -190,7 +178,6 @@
                   // doesn't always pass a tooltip marker name because 'name' isnt always part of the properties.
                   var marker = 
                   placeMarker(new google.maps.LatLng(fc[feature].geometry.coordinates[1], fc[feature].geometry.coordinates[0]), fc[feature].properties.name, map, fc[feature].properties, color);
-                  
                   
                   // write to list
                   $("#table_" + short_cat + " .table-header").after("<tr class='expand'>" +
@@ -204,13 +191,10 @@
                     "</tr>"
                     );
                   
-                  
                 } else if ((fc[feature].geometry.type == "Polygon" || fc[feature].geometry.type == "MultiPolygon") && $('#shapes').attr('checked')) {
-                  
                   
                   // trace paths
                   drawPath(fc[feature].geometry, map);
-
                   
                   // write to list
                   $("#table_" + short_cat + " .table-header").after("<tr class='highlight expand'>" +
@@ -223,8 +207,8 @@
                     "<td>" + "" + "</td>" +
                     "</tr>");
                   
-                  
                 } else {
+                  // blah
                 }
               }
             }
@@ -238,11 +222,10 @@
     
     $(document).ready(function() {
         
+        // set location by ip_census call: http://api.infochimps.com/describe/web/an/ip_census/combined
         $.getJSON("http://api.infochimps.com/web/an/ip_census/combined.json?&apikey=flip69&ip=67.78.118.7&callback=?",
           function(data){ 
             startLocation = new google.maps.LatLng(data.latitude, data.longitude);
-            
-            // need to put EVERYTHING inside here.
             
             var mapOptions = {
               zoom: googleZoom,
@@ -267,9 +250,6 @@
                 
                 // remove map attribute from placeMarker to make this work.  doesn't work because we try to pull up points based on click and this thing responds to the clusters via click.. so the two collide.
                 // var markerCluster = new MarkerClusterer(map, markersArray);
-                
-                
-                
             });
           });
         
@@ -288,8 +268,6 @@
         //     
         //     console.log("zoom level" + zoomLevel);
         // });
-        
-        // set location by ip_census call: http://api.infochimps.com/describe/web/an/ip_census/combined
         
         
         // set new location on address submit
