@@ -10,6 +10,7 @@
     <script type="text/javascript" src="js/GeoJSON.js"></script>
     <script type="text/javascript" src="js/jquery.getUrlParam.js"></script>
     <script type="text/javascript" src="js/StyledMarker.js"></script>
+    <script type="text/javascript" src="js/markerclusterer.js"></script>
     <script type="text/javascript"> 
     // todo/notes
     /* 
@@ -242,6 +243,10 @@
                     lookupBuildPlot(cat, cat, event.latLng.lat(), event.latLng.lng(), map, source, cats_sources[source].color);
                 });
             });
+            
+            // remove map attribute from placeMarker to make this work.  doesn't work because we try to pull up points based on click and this thing responds to the clusters via click.. so the two collide.
+            // var markerCluster = new MarkerClusterer(map, markersArray);
+            
             
             
         });
