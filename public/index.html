@@ -431,9 +431,9 @@
             <!-- <input type="checkbox" name="source_checkboxen" value="auto_nav_data"   /> auto nav  -->
             <input type="checkbox" name="source_checkboxen" id="geonames"  value="geonames"  checked /> <label for="geonames">geonames</label>
             <input type="checkbox" name="source_checkboxen" id="natural_earth"  value="natural_earth" /> <label for="natural_earth">natural earth</label>
-            <input type="checkbox" name="source_checkboxen" id="fire"  value="fire"   /> <label for="fire">fire</label>
-            <input type="checkbox" name="source_checkboxen" id="tele" value="tele"   /> <label for="tele">tele</label>
-            <input type="checkbox" name="source_checkboxen" id="euro_wireless"  value="euro_wireless"   /> <label for="euro_wireless">euro wireless</label>
+            <input type="checkbox" name="source_checkboxen" id="fire"  value="fire"   /> <label for="fire">fire departments</label>
+            <input type="checkbox" name="source_checkboxen" id="tele" value="tele"   /> <label for="tele">cell towers</label>
+            <input type="checkbox" name="source_checkboxen" id="euro_wireless"  value="euro_wireless"   /> <label for="euro_wireless">EU wifi locations</label>
           </div>
           
           <b>Show:</b> 
@@ -465,22 +465,24 @@
             <li>Zoom out to see an entire contient, turn zoom to 1 or 2, turn on <code>natural earth</code> and show both <code>points and shapes</code>.
           </ul>
           
-          <p>You can find all of the data used to make this demo on infochimps.com:</p>
-          <ul>
-            <li><a href="#">geonames api</a></li>
-            <li><a href="#">natural earth api</a></li>
-            <li><a href="#">fire stations api</a></li>
-            <li><a href="#">telecommunicaitons api</a></li>
-            <li><a href="#">euro wireless api</a></li>
-          </ul>
+          
           
           <h2>Credits</h2>
-          <p>This app was built using the <a href="http://infochimps.com/">Infochimps API</a>.  It uses <a href="http://www.geonames.org/">GeoNames</a> data served up through the  <a href="#">GeoNames API call</a>.  </p>
+          <p>This app was built using the <a href="http://infochimps.com/">Infochimps API</a>.</p>
+          
+          <p>You can find all of the data used to make this demo on <a href="http://infochimps.com">infochimps.com</a>:</p>
+          <ul>
+            <li><a href="http://www.infochimps.com/datasets/geonames-places-as-geojson">Geonames Places As GeoJSON API</a></li>
+            <li><a href="http://www.infochimps.com/datasets/natural-earth-boundaries-and-places">Natural Earth Boundaries and Places API</a></li>
+            <li><a href="http://www.infochimps.com/datasets/30689-us-fire-department-locations">30,689 US Fire Department Locations API</a></li>
+            <li><a href="http://www.infochimps.com/datasets/117679-us-cell-tower-locations">117,679 US Cell Tower Locations API</a></li>
+            <li><a href="http://www.infochimps.com/datasets/2283-eu-wifi-locations">2,283 EU Wifi Locations API</a></li>
+          </ul>
           
           <ul>
-          <li>Distance calculation made using <a href="http://www.movable-type.co.uk/scripts/latlong.html">movable-type.co.uk</a>.</li>
+          <li>Distance calculation made using a script from <a href="http://www.movable-type.co.uk/scripts/latlong.html">movable-type.co.uk</a> by Chris Veness.</li>
           <li>GeoJSON objects mapped to Google Maps using <a href="https://github.com/JasonSanford/GeoJSON-to-Google-Maps">GeoJSON-to-Google-Maps</a> by Jason Sanford</li>
-          <li>Also uses jQuery, jQuery JSON</li>
+          <li>Core libraries: <a href="http://jquery.com/">jQuery</a>, <a href="http://code.google.com/p/jquery-json/">jQuery JSON</a> and <a href="http://code.google.com/apis/maps/documentation/javascript/">Google Maps API v3</a></li>
           
           
           
