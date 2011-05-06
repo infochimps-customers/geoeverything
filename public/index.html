@@ -30,6 +30,55 @@
     
     // http://www.movable-type.co.uk/scripts/latlong.html
     /** Converts numeric degrees to radians */
+    
+                  
+    var infowindow; // initialize infowindow or placeMarker will complain
+    var apikey = "ioda006-AvloZA624jIXIzWOBzHuSE6G-69";
+    var map;
+    var markersArray = [];
+    var zoomLevel = $(document).getUrlParam("zoomLevel") != null ? parseInt($(document).getUrlParam("zoomLevel")) : 6 ; // http://www.mathias-bank.de/2007/04/21/jquery-plugin-geturlparam-version-2/
+    var sources = ["geonames", "auto_nav_data", "natural_earth", "fire", "tele", "euro_wireless"];
+    
+    var cats_sources = {
+      geonames: {
+        categories: ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"], 
+        color: "ff0000"
+      },
+      
+      natural_earth: {
+        categories: ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"], 
+        color: "00ff00"
+      },
+      
+      auto_nav_data: {
+        categories: ["road", "railroad"], 
+        color: "00ffff"
+      },
+      
+      // these sources below dont actually take the category param, but this makes it easy for us to loop through them and construct the table
+      
+      fire: {
+        categories: ["fire"], 
+        color: "0000ff"
+      },
+      
+      tele: {
+        categories: ["tele"], 
+        color: "ff00ff"
+      },
+      
+      euro_wireless: {  
+        categories: ["euro_wireless"], 
+        color: "ffff00"
+      }
+    };
+    
+    var startLocation = new google.maps.LatLng(37.4419, -122.1419);  // default to palo alto if ip_census doesn't find anything
+    var googleZoom = $(document).getUrlParam("googleZoom") != null ? parseInt($(document).getUrlParam("googleZoom")) : 13 ;
+    
+    
+    
+    
     if (typeof(Number.prototype.toRad) === "undefined") {
       Number.prototype.toRad = function() {
         return this * Math.PI / 180;
@@ -143,7 +192,7 @@
                   placeMarker(new google.maps.LatLng(fc[feature].geometry.coordinates[1], fc[feature].geometry.coordinates[0]), fc[feature].properties.name, map, fc[feature].properties, color);
                   
                   
-                  
+                  // write to list
                   $("#table_" + short_cat + " .table-header").after("<tr class='expand'>" +
                     "<td><a href='#'>" + fc[feature].properties.asciiname + "</a><div class='properties'>" + JSON.stringify(fc[feature].properties, null, 2) + "</div></td>" +
                     "<td>" + fc[feature].geometry.coordinates.reverse() + "</td>" + // be careful. this is like reverse! in ruby, so if you call anything after this it will still be reversed
@@ -183,34 +232,7 @@
           }
         });
     }
-              
-    var infowindow; // initialize infowindow or placeMarker will complain
-    var apikey = "ioda006-AvloZA624jIXIzWOBzHuSE6G-69";
-    var map;
-    var markersArray = [];
-    var zoomLevel = $(document).getUrlParam("zoomLevel") != null ? parseInt($(document).getUrlParam("zoomLevel")) : 6 ; // http://www.mathias-bank.de/2007/04/21/jquery-plugin-geturlparam-version-2/
-    var sources = ["geonames", "auto_nav_data", "natural_earth", "fire", "tele", "euro_wireless"];
-    
-    var cats_sources = {
-      geonames: {categories: ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"], color: "ff0000"},
-      
-      natural_earth: {categories: ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"], color: "00ff00"},
-      
-      auto_nav_data: {categories: ["road", "railroad"], color: "00ffff"},
-      
-      // these sources below dont actually take the category param, but this makes it easy for us to loop through them and construct the table
-      
-      fire: {categories: ["fire"], color: "0000ff"},
-      
-      tele: {categories: ["tele"], color: "ff00ff"},
-      
-      euro_wireless: {categories: ["euro_wireless"], color: "ffff00"}
-    };
-    
-    var startLocation = new google.maps.LatLng(37.4419, -122.1419);  // default to palo alto if ip_census doesn't find anything
-    var googleZoom = $(document).getUrlParam("googleZoom") != null ? parseInt($(document).getUrlParam("googleZoom")) : 13 ;
-    
-    
+
     
     
     
@@ -221,35 +243,37 @@
             startLocation = new google.maps.LatLng(data.latitude, data.longitude);
             
             // need to put EVERYTHING inside here.
+            
+            var mapOptions = {
+              zoom: googleZoom,
+              center: startLocation,
+              mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+            
+            var map = new google.maps.Map(document.getElementById("map_canvas"),
+              mapOptions);
+            
+            google.maps.event.addListener(map, "click", function(event) {
+                $("#tables").empty(); // clear all the table rows
+                clearOverlays(); // clear all map markers and shapes
+                
+                // console.log(event.latLng.lat()); you may want to know where you're clicking sometimes
+                
+                $.each(sources, function(index, source) {
+                    $.each(cats_sources[source].categories, function(key, cat) {
+                        lookupBuildPlot(cat, cat, event.latLng.lat(), event.latLng.lng(), map, source, cats_sources[source].color);
+                    });
+                });
+                
+                // remove map attribute from placeMarker to make this work.  doesn't work because we try to pull up points based on click and this thing responds to the clusters via click.. so the two collide.
+                // var markerCluster = new MarkerClusterer(map, markersArray);
+                
+                
+                
+            });
           });
         
-        var mapOptions = {
-          zoom: googleZoom,
-          center: startLocation,
-          mapTypeId: google.maps.MapTypeId.ROADMAP
-        };
-        
-        var map = new google.maps.Map(document.getElementById("map_canvas"),
-          mapOptions);
-        
-        google.maps.event.addListener(map, "click", function(event) {
-            $("#tables").empty(); // clear all the table rows
-            clearOverlays(); // clear all map markers and shapes
-            
-            // console.log(event.latLng.lat()); you may want to know where you're clicking sometimes
-            
-            $.each(sources, function(index, source) {
-                $.each(cats_sources[source].categories, function(key, cat) {
-                    lookupBuildPlot(cat, cat, event.latLng.lat(), event.latLng.lng(), map, source, cats_sources[source].color);
-                });
-            });
-            
-            // remove map attribute from placeMarker to make this work.  doesn't work because we try to pull up points based on click and this thing responds to the clusters via click.. so the two collide.
-            // var markerCluster = new MarkerClusterer(map, markersArray);
-            
-            
-            
-        });
+
         
         // auto zoom
         // google.maps.event.addListener(map, 'zoom_changed', function() {
@@ -303,7 +327,7 @@
         });
         
         // expand properties list when someone clicks on its row
-        $(".expand").live('click', function() {
+        $(".expand").live('click', function() { // uses jquery live to select shit that isnt in the DOM on load.
             $('.properties', this).toggle();
         });
     });
@@ -449,7 +473,7 @@
             <option value="7">7 (2.4 km)</option>
             <option value="6" selected>6 (9.7 km) (default)</option>
             <option value="5">5 (39 km) (CAUTION - loads a lot of stuff)</option>
-            <option value="4">4 (155 km)</option>
+            <option value="4">4 (155 km) (geonames points don't appear)</option>
             <option value="3">3 (628 km)</option>
             <option value="2">2 (2530 km)</option>
             <option value="1">1 (10,018 km)</option>
