@@ -9,19 +9,18 @@
     <script type="text/javascript" src="js/jquery.json-2.2.min.js"></script>
     <script type="text/javascript" src="js/GeoJSON.js"></script>
     <script type="text/javascript" src="js/jquery.getUrlParam.js"></script>
+    <script type="text/javascript" src="js/StyledMarker.js"></script>
     <script type="text/javascript"> 
     // todo/notes
     /* 
-    
-    - make categories/sources a multidimensional array, otherwise fire/tele/eurowireless gets called improperly (passes categories to it when it doesnt take cateogries)
-   
-    
     - the api calls are async. if you click again before the calls can finish, the first set of markers will not be cleared
     
     
     - on natural earth, some things show up on level 2 that dont show up at level one.  try clicking on the US and you'll see some states appear at level 1 and ALL states appear at level 2.
     
     - a lot of important cities dont show up at level 1 as points, but do on level 2.
+    
+    - eu wireless has shit in the US
     
     - feature: show all points, show all paths.  autoselects the apis that pull these
     - feature: update address bar for location and zoom and other attributes
@@ -50,8 +49,9 @@
     }
     
     
-    function placeMarker(location, title, map, geojson) {
-      var marker = new google.maps.Marker({
+    function placeMarker(location, title, map, geojson, color) {
+      var marker = new StyledMarker({
+          styleIcon:new StyledIcon(StyledIconTypes.MARKER,{color: color}),
           position: location, 
           title: title,
           map: map
@@ -103,7 +103,7 @@
     
 
                   
-    function build_table(category, short_cat, lat, lng, map, source) {
+    function lookupBuildPlot(category, short_cat, lat, lng, map, source) {
       var url = "http://api.infochimps.com/geo/location/infochimps/" + source + "/places.json?apikey=" + apikey + "&_from=0&_limit=2&zoom=" + zoomLevel + "&category=" + short_cat + "&lng=" + lng + "&lat=" + lat + "&callback=?";
       
       // console.log(url);
@@ -139,7 +139,7 @@
                   
                   // doesn't always pass a tooltip marker name because 'name' isnt always part of the properties.
                   var marker = 
-                  placeMarker(new google.maps.LatLng(fc[feature].geometry.coordinates[1], fc[feature].geometry.coordinates[0]), fc[feature].properties.name, map, fc[feature].properties);
+                  placeMarker(new google.maps.LatLng(fc[feature].geometry.coordinates[1], fc[feature].geometry.coordinates[0]), fc[feature].properties.name, map, fc[feature].properties, "#ff0000");
                   
                   
                   
@@ -187,7 +187,7 @@
     var apikey = "ioda006-AvloZA624jIXIzWOBzHuSE6G-69";
     var map;
     var markersArray = [];
-    var zoomLevel = $(document).getUrlParam("zoomLevel") != null ? parseInt($(document).getUrlParam("zoomLevel")) : 6 ;
+    var zoomLevel = $(document).getUrlParam("zoomLevel") != null ? parseInt($(document).getUrlParam("zoomLevel")) : 6 ; // http://www.mathias-bank.de/2007/04/21/jquery-plugin-geturlparam-version-2/
     var sources = ["geonames", "auto_nav_data", "natural_earth", "fire", "tele", "freebase_geo", "euro_wireless"];
     
     var cats_sources = {
@@ -195,9 +195,11 @@
       
       natural_earth : ["continent", "country", "state", "county", "political", "city", "area_code", "zip_code", "hood", "overlap", "demog", "struct", "food", "bed", "shop", "business", "fun", "sport", "pow", "medical", "station", "death", "police", "fire", "airport", "gov", "school", "military", "tourist", "parking", "tele", "Parks", "Lakes", "stream", "mountain", "coast", "sea", "water", "land", "road", "railroad"],
       
-      fire : ["fire"],
-      
       auto_nav_data : ["road", "railroad"],
+      
+      // these sources below dont actually take the category param, but this makes it easy for us to loop through them and construct the table
+      
+      fire : ["fire"],
       
       tele : ["tele"],
       
@@ -239,7 +241,7 @@
               for (cat in cats_sources[sources[source]]) {
                 // console.log(cats_sources[sources[source]][cat]);
                 
-                build_table(cats_sources[sources[source]][cat], cats_sources[sources[source]][cat], event.latLng.lat(), event.latLng.lng(), map, sources[source]);
+                lookupBuildPlot(cats_sources[sources[source]][cat], cats_sources[sources[source]][cat], event.latLng.lat(), event.latLng.lng(), map, sources[source]);
                 
               }
             }
@@ -452,7 +454,12 @@
           </select>
           Zoom level
         </div>
-        <div id="tables"></div>
+        <div id="result-errors" class="error">
+          
+        </div>
+        <div id="tables">
+        
+        </div>
         
         <div id="info">
         
